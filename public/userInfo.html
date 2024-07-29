@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Info</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            /* Ensures borders are merged between cells */
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            /* Light gray border for cells */
+            padding: 8px;
+            /* Adds padding inside cells */
+            text-align: left;
+            /* Aligns text to the left */
+        }
+
+        th {
+            background-color: #f4f4f4;
+            /* Light gray background for header cells */
+            font-weight: bold;
+            /* Makes header text bold */
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+            /* Alternating row background for better readability */
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+            /* Highlights row on hover */
+        }
+
+        .error {
+            color: red;
+            /* Error message styling */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>User Info</h1>
+    <form id="userInfoForm">
+        <button type="submit">Get User Info</button>
+    </form>
+    <br>
+    <table id="userDataTable">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody id="userData"></tbody>
+    </table>
+    <br>
+    <button id="logoutButton">Logout</button>
+
+    <a href="login.html">Go to Login</a>
+    <script>
+        document.getElementById('userInfoForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent form from submitting the default way
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please log in first');
+                window.location.href = 'login.html'; // Redirect to Login page
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'x-auth-token': token
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    displayUserData(userData);
+                } else {
+                    alert('Failed to fetch user data');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', async function () {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'x-auth-token': token
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Clear the token from local storage
+                        localStorage.removeItem('token');
+                        // Redirect to login page
+                        window.location.href = 'login.html';
+                    } else {
+                        alert('Failed to logout');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            } else {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            }
+        });
+
+        function displayUserData(userData) {
+            const tableBody = document.getElementById('userData');
+            tableBody.innerHTML = ''; // Clear previous data
+
+            // Loop through user data and create table rows
+            for (const [key, value] of Object.entries(userData)) {
+                const row = document.createElement('tr');
+                const cellKey = document.createElement('td');
+                const cellValue = document.createElement('td');
+
+                cellKey.textContent = key;
+                cellValue.textContent = value;
+
+                row.appendChild(cellKey);
+                row.appendChild(cellValue);
+                tableBody.appendChild(row);
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
