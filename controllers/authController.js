@@ -31,8 +31,7 @@ exports.register = async (req, res) => {
         user.password = await bcrypt.hash(password, salt);
 
         await user.save();
-        res.send('User registered');
-        window.location.href = 'login.html';
+        res.json({ msg: 'User registered successfully' });
 
     } catch (err) {
         console.error(err.message);
