@@ -3,10 +3,6 @@ const router = express.Router();
 const { register, login, getMe } = require('./controllers/authController');
 const jwt = require('jsonwebtoken');
 
-const crypto = require('crypto');
-const JWT_SECRET = crypto.randomBytes(64).toString('hex');
-console.log(JWT_SECRET);
-
 // Middleware for protecting routes
 const auth = (req, res, next) => {
     const token = req.header('x-auth-token');
@@ -16,7 +12,7 @@ const auth = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded.user;
         next();
     } catch (err) {
